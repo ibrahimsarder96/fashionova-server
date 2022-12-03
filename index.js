@@ -18,7 +18,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run () {
   try{
     await client.connect();
-   
+   const productCollection = client.db('fashionova').collection('products');
+    // products load
+    app.get('/product', async(req, res) => {
+      const query = {}
+      const cursor = productCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
+    })
   }
   catch{
 
@@ -27,10 +34,10 @@ async function run () {
 run().catch(console.dir);
 
 
-// app.get('/', (req, res) => {
-//   res.send('Hello World!')
-// })
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
 
-// app.listen(port, () => {
-//   console.log(`Example app listening on port ${port}`)
-// })
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
