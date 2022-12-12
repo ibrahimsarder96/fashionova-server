@@ -18,6 +18,7 @@ async function run () {
     await client.connect();
    const productCollection = client.db('fashionova').collection('products');
    const orderCollection = client.db('fashionova').collection('orders');
+   const userCollection = client.db('fashionova').collection('users');
    
     // products load---------------
     app.get('/product', async(req, res) => {
@@ -33,13 +34,36 @@ async function run () {
       const product = await productCollection.findOne(query);
       res.send(product);
     });
+    // stock available------------------
+    app.get('/available', async(req, res) => {
+      const product = req.query.product;
+      const allOrders = await orderCollection.find().toArray();
+      const query = {product: product};
+      const orders = await orderCollection.find(query).toArray();
+      allOrders.forEach()
+      res.send(allOrders);
+    });
+    app.get('/order', async(req, res)=>{
+      const customer = req.query.customer;
+        const query = {customer: customer};
+        const orders = await orderCollection.find(query).toArray();
+        res.send(orders)
+      });
+    
     // order collection-----------------
     app.post('/order', async(req, res) =>{
       const order = req.body;
+      const query = {product: order.product, quantity: order.stock > order.quantity, customer: order.customer}
+      const exists = await orderCollection.findOne(query);
+      if(exists){
+        return res.send({success: false, order: exists});
+      }
       const result = await orderCollection.insertOne(order);
-      res.send(result);
+      return res.send({success: true, result});
     });
-  }
+    
+   
+    }
   catch{
 
   }
