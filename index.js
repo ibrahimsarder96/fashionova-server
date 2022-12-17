@@ -86,6 +86,13 @@ async function run () {
     return res.status(403).send({message: 'Forbidden access'});
   }
   });
+  // order collection -----------------
+  app.get('/order/:id', async(req,res) => {
+    const id = req.params.id;
+    const query = {_id: ObjectId(id)};
+    const order = await orderCollection.findOne(query);
+    res.send(order);
+  });
   // all users ------------------------
   app.get('/user',verifyJWT, async(req, res) => {
     const users = await userCollection.find().toArray();
