@@ -5,6 +5,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require ('stripe')(process.env.STRIPE_SECRET_KEY)
 // middle ware
 app.use(cors());
 app.use(express.json());
@@ -36,6 +37,7 @@ async function run () {
    const productCollection = client.db('fashionova').collection('products');
    const orderCollection = client.db('fashionova').collection('orders');
    const userCollection = client.db('fashionova').collection('users');
+   const paymentCollection = client.db('fashionova').collection('payments');
    
     // products load---------------
     app.get('/product', async(req, res) => {
@@ -92,6 +94,33 @@ async function run () {
     const query = {_id: ObjectId(id)};
     const order = await orderCollection.findOne(query);
     res.send(order);
+  });
+  // payment method --------------------
+  app.post('/create-payment-intent', async(req, res)=>{
+    const product = req.body;
+    const price = product.price;
+    const amount = price*100;
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'usd',
+      payment_method_types:['card']
+    });
+    res.send({clientSecret: paymentIntent.client_secret})
+  });
+  // payment transactionId -------------
+  app.patch('/order/:id', async(req, res)=> {
+    const id = req.params.id;
+    const payment = req.body;
+    const filter = {_id: ObjectId(id)};
+    const updatedDoc = {
+        $set: {
+          paid: true,
+          transactionId: payment.transactionId,
+        }
+    } 
+    const result = await paymentCollection.insertOne(payment);
+    const updateOrder = await orderCollection.updateOne(filter, updatedDoc);
+    res.send(updatedDoc);
   });
   // all users ------------------------
   app.get('/user',verifyJWT, async(req, res) => {
