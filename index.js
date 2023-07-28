@@ -40,27 +40,27 @@ async function run () {
    const paymentCollection = client.db('fashionova').collection('payments');
    
     // products load---------------
-    app.get('/product', async(req, res) => {
+    app.get('/products', async(req, res) => {
       const query = {}
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
       res.send(products);
     });
     // single product load------------
-    app.get('/product/:id', async(req, res) =>{
+    app.get('/products/:id', async(req, res) =>{
       const id = req.params.id;
       const query={_id: ObjectId(id)};
       const product = await productCollection.findOne(query);
       res.send(product);
     });
     // product add ----------------------
-    app.post('/product', async (req, res) =>{
+    app.post('/products', async (req, res) =>{
       const newProduct = req.body;
       const result = await productCollection.insertOne(newProduct);
       res.send(result);
     });
     // Product Remove database ------------
-    app.delete('/product/:id', async(req, res) => {
+    app.delete('/products/:id', async(req, res) => {
       const id = req.params.id;
       const query = {_id: ObjectId(id)};
       const result = await productCollection.deleteOne(query);
